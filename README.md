@@ -1,7 +1,7 @@
 # Chinese NER Using Neural Network
 
 ## 任务简介
-命名实体识别 (Named Entity Recognition, NE) 涉及实体边界的确定和命名实体识别类别的识别，是自然语言处理 (NLP) 领域的一项基础性工作。本项目基于神经网络模型，在不进行分词的前􏰄下，直接利用词典信息来进行中文 NER 任务，并达到比最新的基线更快更好的效果。
+命名实体识别 (Named Entity Recognition, NE) 涉及实体边界的确定和命名实体识别类别的识别，是自然语言处理 (NLP) 领域的一项基础性工作。本项目基于神经网络模型，在不进行分词的前提下，直接利用词典信息来进行中文 NER 任务，并达到比最新的基线更快更好的效果。
 
 ## 项目运行
 
@@ -52,9 +52,9 @@ Total Entity |---               |13438| 1497| 1630
 
 ### 模型训练
 
-参数配置文件是 ./*.conf , 其中 lrcnn_ner.conf 为默认配置文件，配置了 LR-CNN 模型默认参数。同样的，lattice_ner.conf 是配置了 Lattice LSTM 模型默认参数，charbl_ner.conf 是基于char的 BiLSTM-CRF 基线模型配置文件， charbl_ner.conf 是基于 char 和 bichar 的 BiLSTM-CRF 模型配置文件。
+参数配置文件是 ./*.conf , 其中 lrcnn_ner.conf 为默认配置文件，配置了 LR-CNN 模型默认参数。同样的，lattice_ner.conf 是配置了 Lattice LSTM 模型默认参数，charbl_ner.conf 是基于char的 BiLSTM-CRF 基线模型配置文件， charbl_ner.conf 是基于 char 和 bichar 的 BiLSTM-CRF 模型配置文件。
 
-使用 LR-CNN 模型进行训练时，在配置文件 ./lrcnn_ner.conf 中修改参数 status 为 train （训练），其它参数可进行对应修改（或使用其默认值），然后运行以下命令： 
+使用 LR-CNN 模型进行训练时，在配置文件 ./lrcnn_ner.conf 中修改参数 status 为 train （训练），其它参数可进行对应修改（或使用其默认值），然后运行以下命令： 
 ``` bash
 python main.py --conf_path ./lrcnn_ner.conf # conf_path 配置文件地址
 
@@ -62,7 +62,7 @@ python main.py --conf_path ./lrcnn_ner.conf # conf_path 配置文件地址
 
 ### 模型评估与预测
 
-    在模型的对应配置文件 ./*.conf 中修改参数 status 为 test （性能评估及预测）。运行以下命令：
+    在模型的对应配置文件 ./*.conf 中修改参数 status 为 test （性能评估及预测）。运行以下命令：
 
 ``` bash
 python main.py --conf_path ./lrcnn_ner.conf
