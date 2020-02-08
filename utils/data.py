@@ -38,7 +38,7 @@ class Data:
         self.dev_Ids = []
         self.test_Ids = []
         self.raw_Ids = []
-        self.use_bichar = True
+        self.use_bichar = False
         self.char_emb_dim = 50
         self.bichar_emb_dim = 50
         self.gaz_emb_dim = 50
@@ -72,7 +72,7 @@ class Data:
         self.HP_use_posi = False
         self.HP_num_layer = 4
         self.HP_rethink_iter = 2
-        self.model_name = 'CNNmodel'
+        self.model_name = 'CNN_model'
         self.posi_alphabet_size = 0
 
     def show_data_summary(self):

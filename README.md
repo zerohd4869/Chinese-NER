@@ -1,7 +1,7 @@
 # Chinese NER Using Neural Network
 
 ## 任务简介
-命名实体识别 (Named Entity Recognition, NE) 涉及实体边界的确定和命名实体识别类别的识别，是自然语言处理 (NLP) 领域的一项基础性工作。本项目基于神经网络模型，在不进行分词的前提下，直接利用词典信息来进行中文 NER 任务，并达到比最新的基线更快更好的效果。
+命名实体识别 (Named Entity Recognition, NER) 涉及实体边界的确定和命名实体识别类别的识别，是自然语言处理 (NLP) 领域的一项基础性工作。本项目针对 Chinese NER 任务，目前已复现 BiLSTM-CRF、Lattice LSTM 和 LR-CNN 等基线模型。
 
 ## 项目运行
 
@@ -52,9 +52,9 @@ Total Entity |---               |13438| 1497| 1630
 
 ### 模型训练
 
-参数配置文件是 ./*.conf , 其中 lrcnn_ner.conf 为默认配置文件，配置了 LR-CNN 模型默认参数。同样的，lattice_ner.conf 是配置了 Lattice LSTM 模型默认参数，charbl_ner.conf 是基于char的 BiLSTM-CRF 基线模型配置文件， charbl_ner.conf 是基于 char 和 bichar 的 BiLSTM-CRF 模型配置文件。
+参数配置文件是 ./*.conf , 其中 lrcnn_ner.conf 为默认配置文件，配置了 LR-CNN 模型默认参数。同样的，lattice_ner.conf 是配置了 Lattice LSTM 模型默认参数，charbl_ner.conf 是基于char的 BiLSTM-CRF 基线模型配置文件， charbl_ner.conf 是基于 char 和 bichar 的 BiLSTM-CRF 模型配置文件。
 
-使用 LR-CNN 模型进行训练时，在配置文件 ./lrcnn_ner.conf 中修改参数 status 为 train （训练），其它参数可进行对应修改（或使用其默认值），然后运行以下命令： 
+使用 LR-CNN 模型进行训练时，在配置文件 ./lrcnn_ner.conf 中修改参数 status 为 train （训练），其它参数可进行对应修改（或使用其默认值），然后运行以下命令： 
 ``` bash
 python main.py --conf_path ./lrcnn_ner.conf # conf_path 配置文件地址
 
@@ -62,7 +62,7 @@ python main.py --conf_path ./lrcnn_ner.conf # conf_path 配置文件地址
 
 ### 模型评估与预测
 
-    在模型的对应配置文件 ./*.conf 中修改参数 status 为 test （性能评估及预测）。运行以下命令：
+    在模型的对应配置文件 ./*.conf 中修改参数 status 为 test （性能评估及预测）。运行以下命令：
 
 ``` bash
 python main.py --conf_path ./lrcnn_ner.conf
@@ -76,12 +76,12 @@ python main.py --conf_path ./lrcnn_ner.conf
 
 Models | ACC | P | R |F1
 :-|:-:|:-:|:-:|-
-BiLSTM-CRF            | 0.9564 | 0.9335| 0.9323 | 0.9329
-BiLSTM-CRF + bichar| 0.9599| 0.9393| 0.9405| 0.9399
-Lattice LSTM             | 0.9662 | 0.9378| **0.9429** | 0.9403
-LR-CNN                  | **0.9689** | **0.9499** | 0.9417 | **0.9458** 
+BiLSTM-CRF [Lample et al., 2016]            | 0.9564 | 0.9335| 0.9323 | 0.9329
+BiLSTM-CRF + bichar [Yang et al., 2017a]| 0.9599| 0.9393| 0.9405| 0.9399
+Lattice LSTM [Yang et al., 2018]             | 0.9662 | 0.9378| **0.9429** | 0.9403
+LR-CNN [Gui et al., 2019]                  | **0.9689** | **0.9499** | 0.9417 | **0.9458** 
 
-结果表明，在 F1指标下，引入了反思机制的 LR-CNN 模型的 F1 值为0.9458，明显优于基于char和基于 char 和 bichar 的 BiLSTM-CRF 传统基线模型。此外，通过更好的整合词典信息，LR-CNN 优于Lattice LSTM中文基线模型，在该NER任务上取得了最好的效果。同时，LR-CNN方法的训练速度比最先进的 LatticeLSTM 中文基线方法快近3倍。
+结果表明，在 F1指标下，引入了反思机制的 LR-CNN 模型的 F1 值为 0.9458，明显优于基于 char 和基于 char 和 bichar 的 BiLSTM-CRF 模型。此外，通过更好的整合词典信息，LR-CNN 优于 Lattice LSTM 模型，在该 NER 任务上取得了最好的效果。同时，LR-CNN 方法的训练速度比 LatticeLSTM 方法快近3倍。
 
 ### 结果分析
 
@@ -99,21 +99,23 @@ LR-CNN                  | **0.9689** | **0.9499** | 0.9417 | **0.9458**
 
 **参考文献**
 
-[1] Kim, Y. . (2014). Convolutional neural networks for sentence classification. Eprint Arxiv.
+[1] Chiu, J. P. C. , & Nichols, E. . (2015). Named entity recognition with bidirectional lstm-cnns. Computer Science.
 
-[2] Li, X., Jie, Z., Feng, J. , Liu, C. , & Yan, S. (2017). Learning with rethinking: recurrently improving convolutional neural networks through feedback. Pattern Recognition, 79.
+[2] Jie Yang, Yue Zhang, Linwei Li, and Xingxuan Li. 2018. Yedda: A lightweight collaborative text span annotation tool. In ACL. Demonstration.
 
-[3] Ma, X. , & Hovy, E. . (2016). End-to-end sequence labeling via bi-directional lstm-cnns-crf.
+[3] Jie Yang, Zhiyang Teng, Meishan Zhang, and Yue Zhang. 2016. Combining discrete and neural fea- tures for sequence labeling. In CICLing.
+
+[4] Kim, Y. . (2014). Convolutional neural networks for sentence classification. Eprint Arxiv.
+
+[5] Lample, G. , Ballesteros, M. , Subramanian, S. , Kawakami, K. , & Dyer, C. . (2016). Neural architectures for named entity recognition.
+
+[6] Li, X., Jie, Z., Feng, J. , Liu, C. , & Yan, S. (2017). Learning with rethinking: recurrently improving convolutional neural networks through feedback. Pattern Recognition, 79.
+
+[7] Ma, X. , & Hovy, E. . (2016). End-to-end sequence labeling via bi-directional lstm-cnns-crf.
 Strubell, E., Verga, P. , Belanger,D. , & Mccallum, A. . (2017). Fast and accurate entity recognition with iterated dilated convolutions.
 
-[4] Zhang, Y. , & Yang, J. . (2018). Chinese NER Using Lattice LSTM.
+[8] Tao Gui, Ruotian Ma, Qi Zhang, Lujun Zhao, Yu-Gang Jiang, & Xuanjing Huang. 2019. CNN-Based Chinese NER with Lexicon Rethinking, In Proceedings of the 28th International Joint Conference on Artificial Intelligence (IJCAI 2019), August 10-16.
 
-[5] Jie Yang, Yue Zhang, Linwei Li, and Xingxuan Li. 2018. Yedda: A lightweight collaborative text span annotation tool. In ACL. Demonstration.
+[9] Yang, J. , Zhang, Y. , & Dong, F. . (2017). Neural word segmentation with rich pretraining.
 
-[6] Yang, J. , Zhang, Y. , & Dong, F. . (2017). Neural word segmentation with rich pretraining.
-
-[7] Lample, G. , Ballesteros, M. , Subramanian, S. , Kawakami, K. , & Dyer, C. . (2016). Neural architectures for named entity recognition.
-
-[8] Chiu, J. P. C. , & Nichols, E. . (2015). Named entity recognition with bidirectional lstm-cnns. Computer Science.
-
-[9] Tao Gui, Ruotian Ma, Qi Zhang, Lujun Zhao, Yu-Gang Jiang, & Xuanjing Huang. 2019.CNN-Based Chinese NER with Lexicon Rethinking, In Proceedings of the 28th International Joint Conference on Artificial Intelligence (IJCAI 2019), August 10-16.
+[10] Zhang, Y. , & Yang, J. . (2018). Chinese NER Using Lattice LSTM.

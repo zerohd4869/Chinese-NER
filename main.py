@@ -201,14 +201,14 @@ def evaluate(data, model, name):
         instance = instances[start:end]
         if not instance:
             continue
-
-        if data.model_name == 'CNNmodel':
+        pred_label, gold_label = -1, -1
+        if data.model_name == 'CNN_model':
             gaz_list, batch_char, batch_bichar, batch_charlen, batch_label, layer_gaz, gaz_mask, mask = batchify_with_label_2(instance, data.HP_gpu,
                                                                                                                               data.HP_num_layer, True)
-            tag_seq = model(gaz_list, batch_char, batch_bichar, batch_charlen,layer_gaz, gaz_mask, mask)
+            tag_seq = model(gaz_list, batch_char, batch_bichar, batch_charlen, layer_gaz, gaz_mask, mask)
 
             pred_label, gold_label = recover_label_2(tag_seq, batch_label, mask, data.label_alphabet)
-        else:
+        elif data.model_name == 'LSTM_model':
             gaz_list, batch_char, batch_bichar, batch_charlen, batch_charrecover, batch_label, mask = batchify_with_label(instance, data.HP_gpu, True)
             tag_seq = model(gaz_list, batch_char, batch_bichar, batch_charlen, mask)
             pred_label, gold_label = recover_label(tag_seq, batch_label, mask, data.label_alphabet, batch_charrecover)
@@ -361,7 +361,13 @@ def train(data, save_model_dir, dset_dir, seg=True):
     print("Training model...")
     data.show_data_summary()
     save_data_setting(data, dset_dir)
-    model = CNNmodel(data) if data.model_name == 'CNNmodel' else BiLSTM_CRF(data)
+    model = None
+    if data.model_name == 'CNN_model':
+        model = CNNmodel(data)
+    elif data.model_name == 'LSTM_model':
+        model = BiLSTM_CRF(data)
+    assert (model is not None)
+
     print("finished built model.")
     # loss_function = nn.NLLLoss()
     # requires_grad指定要不要更新這個變數 属性默认为False 可以加快運算
@@ -405,21 +411,21 @@ def train(data, save_model_dir, dset_dir, seg=True):
             instance = data.train_Ids[start:end]
             if not instance:
                 continue
-            if data.model_name == 'CNNmodel':
+            tag_seq, batch_label, mask, loss = None, None, None, None
+            if data.model_name == 'CNN_model':
                 gaz_list, batch_word, batch_biword, batch_wordlen, batch_label, layer_gaz, gaz_mask, mask = batchify_with_label_2(instance, data.HP_gpu,
                                                                                                                                   data.HP_num_layer)
                 instance_count += 1
                 loss, tag_seq = model.neg_log_likelihood_loss(gaz_list, batch_word, batch_biword, batch_wordlen, layer_gaz, gaz_mask, mask, batch_label)
-            else:
-
+            elif data.model_name == 'LSTM_model':
                 gaz_list, batch_char, batch_bichar, batch_charlen, batch_wordrecover, batch_label, mask = batchify_with_label(instance, data.HP_gpu,
                                                                                                                               data.HP_num_layer)
                 instance_count += 1
                 loss, tag_seq = model.neg_log_likelihood_loss(gaz_list, batch_char, batch_bichar, batch_charlen, batch_label, mask)
+            assert (loss.size!=torch.Size([]))
             right, whole = predict_check(tag_seq, batch_label, mask)
             right_token += right
             whole_token += whole
-
             total_loss += loss.item()
             batch_loss += loss
 
@@ -447,8 +453,8 @@ def train(data, save_model_dir, dset_dir, seg=True):
                 print("Exceed previous best f score:", best_dev)
             else:
                 print("Exceed previous best acc score:", best_dev)
-            model_name = save_model_dir + '-' + str(idx) + '-' + str(round(current_score * 100, 1)) + ".model"
-            torch.save(model.state_dict(), model_name)
+            save_model_name = save_model_dir + '-' + str(idx) + '-' + str(round(current_score * 100, 1)) + ".model"
+            torch.save(model.state_dict(), save_model_name)
             best_dev = current_score
         speed, acc, p, r, f, _ = evaluate(data, model, "test")
         test_finish = time.time()
@@ -464,7 +470,12 @@ def load_model_decode(model_dir, data, name, gpu, seg=True):
     data.HP_gpu = gpu
     print("Load Model from file: ", model_dir)
 
-    model = CNNmodel(data) if data.model_name == 'CNNmodel' else BiLSTM_CRF(data)
+    model = None
+    if data.model_name == 'CNN_model':
+        model = CNNmodel(data)
+    elif data.model_name == 'LSTM_model':
+        model = BiLSTM_CRF(data)
+    assert (model is not None)
     model.load_state_dict(torch.load(model_dir))
 
     print("Decode %s data ..." % name)
@@ -490,27 +501,22 @@ if __name__ == '__main__':
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('--conf_path', help='path of configure', default='./lrcnn_ner.conf', required=False)
-
     args = parser.parse_args()
-    conf_dict = load_conf.load_conf(args.conf_path)
-
+    #conf_dict = load_conf.load_conf(args.conf_path)
+    conf_dict = load_conf.load_conf('./lattice_ner.conf')
     print(conf_dict)
 
     train_file = conf_dict['train']
     dev_file = conf_dict['dev']
     test_file = conf_dict['test']
-
-    raw_file = conf_dict['raw']
     model_dir = conf_dict['load_model']
     dset_dir = conf_dict['save_dset']
     output_file = conf_dict['output']
     seg = conf_dict['seg']
     status = conf_dict['status']
-
     model_name = conf_dict['model']
     save_model_dir = conf_dict['save_model']
     gpu = torch.cuda.is_available()
-
     # Neural word segmentation with rich pretraining  https://github.com/jiesutd/RichWordSegmentor
     char_emb = conf_dict['char_emb']  # "./data/gigaword_chn.all.a2b.uni.ite50.vec"
     bichar_emb = conf_dict['bichar_emb']  # "./data/gigaword_chn.all.a2b.bi.ite50.vec"
@@ -530,7 +536,6 @@ if __name__ == '__main__':
     print("Train file:", train_file)
     print("Dev file:", dev_file)
     print("Test file:", test_file)
-    print("Raw file:", raw_file)
     print("Char emb:", char_emb)
     print("Bichar emb:", bichar_emb)
     print("Gaz file:", gaz_file)
@@ -549,26 +554,25 @@ if __name__ == '__main__':
         data.HP_lr = conf_dict['HP_lr']  # 0.015
         data.HP_lr_decay = conf_dict['HP_lr_decay']  # 0.5
         data.HP_hidden_dim = conf_dict['HP_hidden_dim']
+        data.MAX_SENTENCE_LENGTH = conf_dict['MAX_SENTENCE_LENGTH']
         data_initialization(data, gaz_file, train_file, dev_file, test_file)
 
-        if data.model_name == 'CNNmodel':
+        if data.model_name in ['CNN_model', 'LSTM_model']:
             data.generate_instance_with_gaz_2(train_file, 'train')
             data.generate_instance_with_gaz_2(dev_file, 'dev')
             data.generate_instance_with_gaz_2(test_file, 'test')
         else:
-            data.generate_instance_with_gaz_2(train_file, 'train')
-            data.generate_instance_with_gaz_2(dev_file, 'dev')
-            data.generate_instance_with_gaz_2(test_file, 'test')
-
+            print("model_name is not set!")
+            sys.exit(1)
         data.build_char_pretrain_emb(char_emb)
         data.build_bichar_pretrain_emb(bichar_emb)
         data.build_gaz_pretrain_emb(gaz_file)
         train(data, save_model_dir, dset_dir, seg)
     elif status == 'test':
         data = load_data_setting(dset_dir)
-        if data.model_name == 'CNNmodel':
+        if data.model_name == 'CNN_model':
             data.generate_instance_with_gaz_2(test_file, 'test')
-        else:
+        elif data.model_name == 'LSTM_model':
             data.generate_instance_with_gaz(test_file, 'test')
         load_model_decode(model_dir, data, 'test', gpu, seg)
     else:

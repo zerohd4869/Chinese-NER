@@ -236,11 +236,9 @@ def read_instance_with_gaz(input_file, gaz, char_alphabet, bichar_alphabet, gaz_
 
         words = []
         biwords = []
-        # chars = []
         labels = []
         word_Ids = []
         biword_Ids = []
-        # char_Ids = []
         label_Ids = []
         # for sequence labeling data format i.e. CoNLL 2003
         for idx in range(len(in_lines)):
@@ -275,7 +273,6 @@ def read_instance_with_gaz(input_file, gaz, char_alphabet, bichar_alphabet, gaz_
                     pass
                 # for char in char_list:
                 #     char_Id.append(character_alphabet.get_index(char))
-                # chars.append(char_list)
                 # char_Ids.append(char_Id)
 
             else:
@@ -283,10 +280,7 @@ def read_instance_with_gaz(input_file, gaz, char_alphabet, bichar_alphabet, gaz_
                     gazs = []
                     gaz_Ids = []
                     w_length = len(words)
-                    # print sentence
-                    # for w in words:
-                    #     print w," ",
-                    # print
+
                     for idx in range(w_length):
                         matched_list = gaz.enumerateMatchList(words[idx:])
                         matched_length = [len(a) for a in matched_list]
@@ -309,11 +303,9 @@ def read_instance_with_gaz(input_file, gaz, char_alphabet, bichar_alphabet, gaz_
                     instence_Ids.append([word_Ids, biword_Ids, gaz_Ids, label_Ids])
                 words = []
                 biwords = []
-                chars = []
                 labels = []
                 word_Ids = []
                 biword_Ids = []
-                char_Ids = []
                 label_Ids = []
                 gazs = []
                 gaz_Ids = []
