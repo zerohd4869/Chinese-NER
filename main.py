@@ -189,7 +189,7 @@ def evaluate(data, model, name):
     gold_results = []
     # set model in eval model
     model.eval()
-    batch_size = 10
+    batch_size = 16
     start_time = time.time()
     train_num = len(instances)
     total_batch = train_num // batch_size + 1
@@ -502,8 +502,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--conf_path', help='path of configure', default='./lrcnn_ner.conf', required=False)
     args = parser.parse_args()
-    #conf_dict = load_conf.load_conf(args.conf_path)
-    conf_dict = load_conf.load_conf('./lattice_ner.conf')
+    conf_dict = load_conf.load_conf(args.conf_path)
+    #conf_dict = load_conf.load_conf('./lattice_ner.conf')
     print(conf_dict)
 
     train_file = conf_dict['train']
