@@ -62,7 +62,7 @@ python main.py --conf_path ./wclstm_ner.conf # conf_path 配置文件地址
 
 ### 模型评估与预测
 
-    在模型的对应配置文件 ./*.conf 中修改参数 status 为 test （性能评估及预测）。运行以下命令：
+在模型的对应配置文件 ./*.conf 中修改参数 status 为 test （性能评估及预测）。运行以下命令：
 
 ``` bash
 python main.py --conf_path ./wclstm_ner.conf
