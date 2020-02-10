@@ -1,7 +1,7 @@
 # Chinese NER Using Neural Network
 
 ## 任务简介
-命名实体识别 (Named Entity Recognition, NER) 涉及实体边界的确定和命名实体识别类别的识别，是自然语言处理 (NLP) 领域的一项基础性工作。本项目针对 Chinese NER 任务，目前已复现 BiLSTM-CRF、Lattice LSTM 和 LR-CNN 等基线模型。
+命名实体识别 (Named Entity Recognition, NER) 涉及实体边界的确定和命名实体识别类别的识别，是自然语言处理 (NLP) 领域的一项基础性工作。本项目针对 Chinese NER 任务，目前已复现 BiLSTM-CRF、Lattice LSTM、LR-CNN 和 WC-LSTM 等模型。
 
 ## 项目运行
 
@@ -24,11 +24,11 @@ Char   | 124.1k | 13.9k | 15.1k
 
 **标注策略**：BMEO
 
-**分割方式**: '\t' (吴\tB-NAME)  
+**分割方式**: '\t' (吴 \t B-NAME)  
 
 **标注具体类型：**
 
-该数据集使用 YEDDA System（Yang et al., 2018）手动注释了8种命名实体。
+该数据集使用 YEDDA System [Yang et al.,2018] 手动注释了8种命名实体。
 
 Tag | Meaning | Train | Dev |Test
 :-:|:-|:-:|:-:|:-:
@@ -47,16 +47,16 @@ Total Entity |---               |13438| 1497| 1630
 ### 加载预训练 Embeddings
 
 
-预训练 Embeddings 使用了分词器 [RichWordSegmentor](https://github.com/jiesutd/RichWordSegmentor)（Yang et al.,2017a）的 baseline。其中，```gigaword_chn.all.a2b.uni.ite50.vec```, ```gigaword_chn.all.a2b.bi.ite50.vec``` 和 ```ctb.50d.vec``` 分别对应的是 char, bichar 和 word embeddings，这三个 ```*.vec``` 文件均可在 RichWordSegmentor 项目中获取，并将其放入目录```./data/```下。
+预训练 Embeddings 使用了分词器 [RichWordSegmentor](https://github.com/jiesutd/RichWordSegmentor) [Yang et al.,2017a]的 baseline。其中，```gigaword_chn.all.a2b.uni.ite50.vec```, ```gigaword_chn.all.a2b.bi.ite50.vec``` 和 ```ctb.50d.vec``` 分别对应的是 char, bichar 和 word embeddings，这三个 ```*.vec``` 文件均可在 RichWordSegmentor 项目中获取，并将其放入目录```./data/```下。
 
 
 ### 模型训练
 
-参数配置文件是 ./*.conf , 其中 lrcnn_ner.conf 为默认配置文件，配置了 LR-CNN 模型默认参数。同样的，lattice_ner.conf 是配置了 Lattice LSTM 模型默认参数，charbl_ner.conf 是基于char的 BiLSTM-CRF 基线模型配置文件， charbl_ner.conf 是基于 char 和 bichar 的 BiLSTM-CRF 模型配置文件。
+参数配置文件是 ./*.conf , 其中 wclstm_ner.conf 为默认配置文件，配置了 WC-LSTM 模型的默认参数。同样的，lrcnn_ner.conf是 LR-CNN 的模型配置文件，lattice_ner.conf 是 Lattice LSTM 的模型配置文件，charbl_ner.conf 是基于char的 BiLSTM-CRF 基线模型配置文件， charbl_ner.conf 是基于 char 和 bichar 的 BiLSTM-CRF 模型配置文件。
 
-使用 LR-CNN 模型进行训练时，在配置文件 ./lrcnn_ner.conf 中修改参数 status 为 train （训练），其它参数可进行对应修改（或使用其默认值），然后运行以下命令： 
+使用 WC-LSTM 模型进行训练时，在配置文件 ./wclstm_ner.conf 中修改参数 status 为 train （训练），其它参数可进行对应修改（或使用其默认值），然后运行以下命令： 
 ``` bash
-python main.py --conf_path ./lrcnn_ner.conf # conf_path 配置文件地址
+python main.py --conf_path ./wclstm_ner.conf # conf_path 配置文件地址
 
 ```
 
@@ -65,7 +65,7 @@ python main.py --conf_path ./lrcnn_ner.conf # conf_path 配置文件地址
     在模型的对应配置文件 ./*.conf 中修改参数 status 为 test （性能评估及预测）。运行以下命令：
 
 ``` bash
-python main.py --conf_path ./lrcnn_ner.conf
+python main.py --conf_path ./wclstm_ner.conf
 
 ```
 
@@ -90,7 +90,7 @@ WC-LSTM [Liu et al., 2019]                  | **0.9692**| **0.9568**| **0.9503**
 
 引入了反思机制的 LR-CNN 模型比 Lattice LSTM 等上述三个模型取得了更快更好的效果，这说明了利用反思机制解决匹配相同字符的潜在词之间的冲突的方法，可以进一步提高词典信息的有效利用。而利用 CNN 结构把句子里的所有字符以及所有字符对应所有可能的词语全部并行地进行处理，以更充分的利用 GPU 的性能，因此训练速度会比RNN快很多。
 
-WC-LSTM 效果目前最好。
+最后，WC-LSTM 效果目前最好。
 
 **参考文献**
 
