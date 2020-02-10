@@ -9,7 +9,6 @@ def get_ner_fmeasure(golden_lists, predict_lists, label_type="BMES"):
     right_tag = 0
     all_tag = 0
     for idx in range(0, sent_num):
-        # word_list = sentence_lists[idx]
         golden_list = golden_lists[idx]
         predict_list = predict_lists[idx]
         for idy in range(len(golden_list)):

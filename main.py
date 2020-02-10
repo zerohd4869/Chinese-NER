@@ -15,10 +15,12 @@ from tqdm import tqdm
 import load_conf
 from model.bilstmcrf import BiLSTM_CRF
 from model.CNNmodel import CNNmodel
+from model.cw_ner.lw.cw_ner import CW_NER
+
 from utils.data import Data
 from utils.metric import get_ner_fmeasure
 
-seed_num = 2019
+seed_num = 100
 random.seed(seed_num)
 torch.manual_seed(seed_num)
 np.random.seed(seed_num)
@@ -174,22 +176,20 @@ def lr_decay(optimizer, epoch, decay_rate, init_lr):
 
 
 def evaluate(data, model, name):
-    global instances
+    instances = []
     if name == "train":
         instances = data.train_Ids
     elif name == "dev":
         instances = data.dev_Ids
     elif name == 'test':
         instances = data.test_Ids
-    elif name == 'raw':
-        instances = data.raw_Ids
     else:
         print("Error: wrong evaluate name,", name)
     pred_results = []
     gold_results = []
     # set model in eval model
     model.eval()
-    batch_size = 16
+    batch_size = data.HP_batch_size
     start_time = time.time()
     train_num = len(instances)
     total_batch = train_num // batch_size + 1
@@ -202,7 +202,13 @@ def evaluate(data, model, name):
         if not instance:
             continue
         pred_label, gold_label = -1, -1
-        if data.model_name == 'CNN_model':
+        if data.model_name == 'WC-LSTM_model':
+            gaz_list, reverse_gaz_list, batch_char, batch_bichar, batch_charlen, batch_charrecover, batch_label, mask = batchify_with_label_3(instance,
+                                                                                                                                              data.HP_gpu,
+                                                                                                                                              data.HP_num_layer)
+            tag_seq = model(gaz_list, reverse_gaz_list, batch_char, batch_charlen, mask)
+            pred_label, gold_label = recover_label(tag_seq, batch_label, mask, data.label_alphabet, batch_charrecover)
+        elif data.model_name == 'CNN_model':
             gaz_list, batch_char, batch_bichar, batch_charlen, batch_label, layer_gaz, gaz_mask, mask = batchify_with_label_2(instance, data.HP_gpu,
                                                                                                                               data.HP_num_layer, True)
             tag_seq = model(gaz_list, batch_char, batch_bichar, batch_charlen, layer_gaz, gaz_mask, mask)
@@ -238,8 +244,6 @@ def batchify_with_label(input_batch_list, gpu, volatile_flag=False):
     batch_size = len(input_batch_list)
     chars = [sent[0] for sent in input_batch_list]
     bichars = [sent[1] for sent in input_batch_list]
-    # chars = [sent[2] for sent in input_batch_list]
-
     gazs = [sent[2] for sent in input_batch_list]
     labels = [sent[3] for sent in input_batch_list]
     char_seq_lengths = torch.LongTensor(list(map(len, chars)))
@@ -302,11 +306,8 @@ def batchify_with_label_2(input_batch_list, gpu, num_layer, volatile_flag=False)
     batch_size = len(input_batch_list)
     chars = [sent[0] for sent in input_batch_list]
     bichars = [sent[1] for sent in input_batch_list]
-    # chars = [sent[2] for sent in input_batch_list]
-
     gazs = [sent[2] for sent in input_batch_list]
     labels = [sent[3] for sent in input_batch_list]
-
     layer_gazs = [sent[4] for sent in input_batch_list]
     gaz_mask = [sent[5] for sent in input_batch_list]
 
@@ -335,21 +336,10 @@ def batchify_with_label_2(input_batch_list, gpu, num_layer, volatile_flag=False)
         gaz_mask_tensor[idx, :seqlen] = torch.LongTensor(gazmask)
         layer_gaz_tensor[idx, :seqlen] = torch.LongTensor(layergaz)
 
-    # char_seq_lengths, char_perm_idx = char_seq_lengths.sort(0, descending=True)
-    # char_seq_tensor = char_seq_tensor[char_perm_idx]
-    # bichar_seq_tensor = bichar_seq_tensor[char_perm_idx]
-    # label_seq_tensor = label_seq_tensor[char_perm_idx]
-    # mask = mask[char_perm_idx]
-    # _, char_seq_recover = char_perm_idx.sort(0, descending=False)
-
-    # keep the gaz_list in orignial order
-    # gaz_list = [gazs[i] for i in char_perm_idx]
-    # gaz_list.append(volatile_flag)
     if gpu:
         char_seq_tensor = char_seq_tensor.cuda()
         bichar_seq_tensor = bichar_seq_tensor.cuda()
         char_seq_lengths = char_seq_lengths.cuda()
-        # char_seq_recover = char_seq_recover.cuda()
         label_seq_tensor = label_seq_tensor.cuda()
         layer_gaz_tensor = layer_gaz_tensor.cuda()
         gaz_mask_tensor = gaz_mask_tensor.cuda()
@@ -357,12 +347,66 @@ def batchify_with_label_2(input_batch_list, gpu, num_layer, volatile_flag=False)
     return gazs, char_seq_tensor, bichar_seq_tensor, char_seq_lengths, label_seq_tensor, layer_gaz_tensor, gaz_mask_tensor, mask
 
 
+def batchify_with_label_3(input_batch_list, gpu, volatile_flag=False):
+    """
+        input: list of chars, chars and labels, various length. [[chars,bichars,chars,gaz, labels],[chars,bichars,chars,labels],...]
+            chars: word ids for one sentence. (batch_size, sent_len)
+            chars: char ids for on sentences, various length. (batch_size, sent_len, each_word_length)
+        output:
+            zero padding for word and char, with their batch length
+            char_seq_tensor: (batch_size, max_sent_len) Variable
+            char_seq_lengths: (batch_size,1) Tensor
+            char_seq_recover: (batch_size*max_sent_len,1)  recover char sequence order
+            label_seq_tensor: (batch_size, max_sent_len)
+            mask: (batch_size, max_sent_len)
+    """
+    batch_size = len(input_batch_list)
+    chars = [sent[0] for sent in input_batch_list]
+    bichars = [sent[1] for sent in input_batch_list]
+    gazs = [sent[2] for sent in input_batch_list]
+    reverse_gazs = [sent[3] for sent in input_batch_list]
+    labels = [sent[4] for sent in input_batch_list]
+    char_seq_lengths = torch.LongTensor(list(map(len, chars)))
+    max_seq_len = char_seq_lengths.max()
+    char_seq_tensor = autograd.Variable(torch.zeros((batch_size, max_seq_len))).long()
+    bichar_seq_tensor = autograd.Variable(torch.zeros((batch_size, max_seq_len))).long()
+    label_seq_tensor = autograd.Variable(torch.zeros((batch_size, max_seq_len))).long()
+    mask = autograd.Variable(torch.zeros((batch_size, max_seq_len))).byte()
+    for idx, (seq, biseq, label, seqlen) in enumerate(zip(chars, bichars, labels, char_seq_lengths)):
+        char_seq_tensor[idx, :seqlen] = torch.LongTensor(seq)
+        bichar_seq_tensor[idx, :seqlen] = torch.LongTensor(biseq)
+        label_seq_tensor[idx, :seqlen] = torch.LongTensor(label)
+        mask[idx, :seqlen] = torch.Tensor([1] * int(seqlen))
+    char_seq_lengths, char_perm_idx = char_seq_lengths.sort(0, descending=True)
+    char_seq_tensor = char_seq_tensor[char_perm_idx]
+    bichar_seq_tensor = bichar_seq_tensor[char_perm_idx]
+    label_seq_tensor = label_seq_tensor[char_perm_idx]
+    mask = mask[char_perm_idx]
+
+    _, char_seq_recover = char_perm_idx.sort(0, descending=False)
+
+    gaz_list = [gazs[i] for i in char_perm_idx]
+    reverse_gaz_list = [reverse_gazs[i] for i in char_perm_idx]
+
+    if gpu:
+        char_seq_tensor = char_seq_tensor.cuda()
+        bichar_seq_tensor = bichar_seq_tensor.cuda()
+        char_seq_lengths = char_seq_lengths.cuda()
+        char_seq_recover = char_seq_recover.cuda()
+        label_seq_tensor = label_seq_tensor.cuda()
+        mask = mask.cuda()
+
+    return gaz_list, reverse_gaz_list, char_seq_tensor, bichar_seq_tensor, char_seq_lengths, char_seq_recover, label_seq_tensor, mask
+
+
 def train(data, save_model_dir, dset_dir, seg=True):
     print("Training model...")
     data.show_data_summary()
     save_data_setting(data, dset_dir)
     model = None
-    if data.model_name == 'CNN_model':
+    if data.model_name == 'WC-LSTM_model':
+        model = CW_NER(data, type=2)
+    elif data.model_name == 'CNN_model':
         model = CNNmodel(data)
     elif data.model_name == 'LSTM_model':
         model = BiLSTM_CRF(data)
@@ -412,27 +456,33 @@ def train(data, save_model_dir, dset_dir, seg=True):
             if not instance:
                 continue
             tag_seq, batch_label, mask, loss = None, None, None, None
-            if data.model_name == 'CNN_model':
-                gaz_list, batch_word, batch_biword, batch_wordlen, batch_label, layer_gaz, gaz_mask, mask = batchify_with_label_2(instance, data.HP_gpu,
+            if data.model_name == 'WC-LSTM_model':
+                gaz_list, reverse_gaz_list, batch_char, batch_bichar, batch_charlen, batch_charrecover, batch_label, mask = batchify_with_label_3(instance,
+                                                                                                                                                  data.HP_gpu,
+                                                                                                                                                  data.HP_num_layer)
+                instance_count += 1
+                loss, tag_seq = model.neg_log_likelihood_loss(gaz_list, reverse_gaz_list, batch_char, batch_charlen, batch_label, mask)
+            elif data.model_name == 'CNN_model':
+                gaz_list, batch_char, batch_bichar, batch_charlen, batch_label, layer_gaz, gaz_mask, mask = batchify_with_label_2(instance, data.HP_gpu,
                                                                                                                                   data.HP_num_layer)
                 instance_count += 1
-                loss, tag_seq = model.neg_log_likelihood_loss(gaz_list, batch_word, batch_biword, batch_wordlen, layer_gaz, gaz_mask, mask, batch_label)
+                loss, tag_seq = model.neg_log_likelihood_loss(gaz_list, batch_char, batch_bichar, batch_charlen, layer_gaz, gaz_mask, mask, batch_label)
             elif data.model_name == 'LSTM_model':
                 gaz_list, batch_char, batch_bichar, batch_charlen, batch_wordrecover, batch_label, mask = batchify_with_label(instance, data.HP_gpu,
                                                                                                                               data.HP_num_layer)
                 instance_count += 1
                 loss, tag_seq = model.neg_log_likelihood_loss(gaz_list, batch_char, batch_bichar, batch_charlen, batch_label, mask)
-            assert (loss.size!=torch.Size([]))
+            assert (loss.size != torch.Size([]))
             right, whole = predict_check(tag_seq, batch_label, mask)
             right_token += right
             whole_token += whole
             total_loss += loss.item()
             batch_loss += loss
-
-            batch_loss.backward()
-            optimizer.step()
-            model.zero_grad()
-            batch_loss = 0
+            if end % data.HP_clip == 0:
+                batch_loss.backward()
+                optimizer.step()
+                model.zero_grad()
+                batch_loss = 0
 
         epoch_finish = time.time()
         epoch_cost = epoch_finish - epoch_start
@@ -450,9 +500,9 @@ def train(data, save_model_dir, dset_dir, seg=True):
 
         if current_score > best_dev:
             if seg:
-                print("Exceed previous best f score:", best_dev)
+                print("Exceed previous best f score: %.4f, \033[35mnew best f: %.4f\033[0m" % (best_dev, current_score))
             else:
-                print("Exceed previous best acc score:", best_dev)
+                print("Exceed previous best acc score:%.4f, \033[35mnew best acc: %.4f\033[0m" % (best_dev, current_score))
             save_model_name = save_model_dir + '-' + str(idx) + '-' + str(round(current_score * 100, 1)) + ".model"
             torch.save(model.state_dict(), save_model_name)
             best_dev = current_score
@@ -471,7 +521,9 @@ def load_model_decode(model_dir, data, name, gpu, seg=True):
     print("Load Model from file: ", model_dir)
 
     model = None
-    if data.model_name == 'CNN_model':
+    if data.model_name == 'WC-LSTM_model':
+        model = CW_NER(data)
+    elif data.model_name == 'CNN_model':
         model = CNNmodel(data)
     elif data.model_name == 'LSTM_model':
         model = BiLSTM_CRF(data)
@@ -500,10 +552,11 @@ if __name__ == '__main__':
     python main.py --conf_path ./lrcnn_ner.conf
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--conf_path', help='path of configure', default='./lrcnn_ner.conf', required=False)
+    # parser.add_argument('--conf_path', help='path of configure', default='./lrcnn_ner.conf', required=False)
+    # parser.add_argument('--conf_path', help='path of configure', default='./lattice_ner.conf', required=False)
+    parser.add_argument('--conf_path', help='path of configure', default='./wclstm_ner.conf', required=False)
     args = parser.parse_args()
     conf_dict = load_conf.load_conf(args.conf_path)
-    #conf_dict = load_conf.load_conf('./lattice_ner.conf')
     print(conf_dict)
 
     train_file = conf_dict['train']
@@ -555,12 +608,17 @@ if __name__ == '__main__':
         data.HP_lr_decay = conf_dict['HP_lr_decay']  # 0.5
         data.HP_hidden_dim = conf_dict['HP_hidden_dim']
         data.MAX_SENTENCE_LENGTH = conf_dict['MAX_SENTENCE_LENGTH']
+        data.HP_lstm_layer = conf_dict['HP_lstm_layer']
         data_initialization(data, gaz_file, train_file, dev_file, test_file)
 
         if data.model_name in ['CNN_model', 'LSTM_model']:
             data.generate_instance_with_gaz_2(train_file, 'train')
             data.generate_instance_with_gaz_2(dev_file, 'dev')
             data.generate_instance_with_gaz_2(test_file, 'test')
+        elif data.model_name in ['WC-LSTM_model']:
+            data.generate_instance_with_gaz_3(train_file, 'train')
+            data.generate_instance_with_gaz_3(dev_file, 'dev')
+            data.generate_instance_with_gaz_3(test_file, 'test')
         else:
             print("model_name is not set!")
             sys.exit(1)

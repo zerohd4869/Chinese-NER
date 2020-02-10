@@ -76,12 +76,11 @@ python main.py --conf_path ./lrcnn_ner.conf
 
 Models | ACC | P | R |F1
 :-|:-:|:-:|:-:|-
-BiLSTM-CRF [Lample et al., 2016]            | 0.9564 | 0.9335| 0.9323 | 0.9329
-BiLSTM-CRF + bichar [Yang et al., 2017a]| 0.9599| 0.9393| 0.9405| 0.9399
-Lattice LSTM [Yang et al., 2018]             | 0.9662 | 0.9378| **0.9429** | 0.9403
-LR-CNN [Gui et al., 2019]                  | **0.9689** | **0.9499** | 0.9417 | **0.9458** 
-
-结果表明，在 F1指标下，引入了反思机制的 LR-CNN 模型的 F1 值为 0.9458，明显优于基于 char 和基于 char 和 bichar 的 BiLSTM-CRF 模型。此外，通过更好的整合词典信息，LR-CNN 优于 Lattice LSTM 模型，在该 NER 任务上取得了最好的效果。同时，LR-CNN 方法的训练速度比 LatticeLSTM 方法快近3倍。
+BiLSTM-CRF [Lample et al., 2016]            | 0.9564    | 0.9335    | 0.9323    | 0.9329
+BiLSTM-CRF + bichar [Yang et al., 2017a]    | 0.9599    | 0.9393    | 0.9405    | 0.9399
+Lattice LSTM [Yang et al., 2018]            | 0.9662    | 0.9378    | 0.9429    | 0.9403
+LR-CNN [Gui et al., 2019]                   | 0.9689    | 0.9499    | 0.9417    | 0.9458 
+WC-LSTM [Liu et al., 2019]                  | **0.9692**| **0.9568**| **0.9503**| **0.9535**
 
 ### 结果分析
 
@@ -89,33 +88,31 @@ LR-CNN [Gui et al., 2019]                  | **0.9689** | **0.9499** | 0.9417 | 
 
 其中，加入 bichar 的 BiLSTM-CRF 模型充分利用了字粒度信息，效果略优于加 BiLSTM-CRF 传统基线模型。对于 Lattice LSTM 中文基线模型，相较于前两者，将字符级别序列信息和该序列对应的词信息同时编码供模型自动取用，加入的词信息更加丰富了语义表达，且它的门控循环单元允许模型从一个句子中选择最相关的字符和单词，进而可以取得更好的效果。这也反映了词典在字符级的中文NER任务中起着重要作用。
 
-而引入了反思机制的 LR-CNN 模型比 Lattice LSTM 等上述三个模型取得了更快更好的效果，这说明了利用反思机制解决匹配相同字符的潜在词之间的冲突的方法，可以进一步提高词典信息的有效利用。而利用 CNN 结构把句子里的所有字符以及所有字符对应所有可能的词语全部并行地进行处理，以更充分的利用 GPU 的性能，因此训练速度会比RNN快很多。
+引入了反思机制的 LR-CNN 模型比 Lattice LSTM 等上述三个模型取得了更快更好的效果，这说明了利用反思机制解决匹配相同字符的潜在词之间的冲突的方法，可以进一步提高词典信息的有效利用。而利用 CNN 结构把句子里的所有字符以及所有字符对应所有可能的词语全部并行地进行处理，以更充分的利用 GPU 的性能，因此训练速度会比RNN快很多。
 
-## 总结
-
-在该 Resume 数据集上，分别使用了 BiLSTM-CRF 传统基线模型、加入 bichar 的 BiLSTM-CRF 模型、Lattice LSTM 中文基线模型和引入反思机制的 LR-CNN 模型这四个神经网络方法来进行中文命名实体的识别。
-
-实验结果表明，引入反思机制的 LR-CNN 方法与 BiLSTM-CRF、加入 bichar 的 BiLSTM-CRF 和 Lattice LSTM 这三个方法相比，该方法可以显著地提高模型性能和训练速度，进而更好的完成了该中文 NER 的任务。
+WC-LSTM 效果目前最好。
 
 **参考文献**
 
-[1] Chiu, J. P. C. , & Nichols, E. . (2015). Named entity recognition with bidirectional lstm-cnns. Computer Science.
+[1] Chiu, Jason P. C. , and E. Nichols . Named Entity Recognition with Bidirectional LSTM-CNNs. Computer Science (2015).
 
 [2] Jie Yang, Yue Zhang, Linwei Li, and Xingxuan Li. 2018. Yedda: A lightweight collaborative text span annotation tool. In ACL. Demonstration.
 
 [3] Jie Yang, Zhiyang Teng, Meishan Zhang, and Yue Zhang. 2016. Combining discrete and neural fea- tures for sequence labeling. In CICLing.
 
-[4] Kim, Y. . (2014). Convolutional neural networks for sentence classification. Eprint Arxiv.
+[4] Kim, Yoon. Convolutional Neural Networks for Sentence Classification. Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP). 2014.
 
-[5] Lample, G. , Ballesteros, M. , Subramanian, S. , Kawakami, K. , & Dyer, C. . (2016). Neural architectures for named entity recognition.
+[5] Lample, Guillaume, et al. Neural Architectures for Named Entity Recognition. Proceedings of NAACL-HLT. 2016.
 
-[6] Li, X., Jie, Z., Feng, J. , Liu, C. , & Yan, S. (2017). Learning with rethinking: recurrently improving convolutional neural networks through feedback. Pattern Recognition, 79.
+[6] Li, Xin, et al. Learning with rethinking: Recurrently improving convolutional neural networks through feedback. Pattern Recognition 79 (2018): 183-194.
 
-[7] Ma, X. , & Hovy, E. . (2016). End-to-end sequence labeling via bi-directional lstm-cnns-crf.
+[7] Ma, Xuezhe, and Eduard Hovy. End-to-end Sequence Labeling via Bi-directional LSTM-CNNs-CRF.
 Strubell, E., Verga, P. , Belanger,D. , & Mccallum, A. . (2017). Fast and accurate entity recognition with iterated dilated convolutions.
 
 [8] Tao Gui, Ruotian Ma, Qi Zhang, Lujun Zhao, Yu-Gang Jiang, & Xuanjing Huang. 2019. CNN-Based Chinese NER with Lexicon Rethinking, In Proceedings of the 28th International Joint Conference on Artificial Intelligence (IJCAI 2019), August 10-16.
 
-[9] Yang, J. , Zhang, Y. , & Dong, F. . (2017). Neural word segmentation with rich pretraining.
+[9] Yang, Jie, Yue Zhang, and Fei Dong. Neural Word Segmentation with Rich Pretraining. Proceedings of the 55th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers). 2017.
 
-[10] Zhang, Y. , & Yang, J. . (2018). Chinese NER Using Lattice LSTM.
+[10] Zhang, Yue, and Jie Yang. Chinese NER Using Lattice LSTM. Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers). 2018.
+
+[11] Liu, Wei, et al. An Encoding Strategy Based Word-Character LSTM for Chinese NER. Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers). 2019.

@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import torch
-import torch.autograd as autograd
-import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
+import torch
+import torch.nn as nn
+
 from model.crf import CRF
 from model.layers import GlobalGate, LayerGate, MultiscaleAttention
 

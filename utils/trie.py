@@ -9,8 +9,12 @@ class TrieNode:
 
 
 class Trie:
-    def __init__(self):
+    def __init__(self, use_single):
         self.root = TrieNode()
+        if use_single:
+            self.min_len = 0
+        else:
+            self.min_len = 1
 
     def insert(self, word):
 
@@ -36,11 +40,11 @@ class Trie:
                 return False
         return True
 
-    def enumerateMatch(self, char, space="_", backward=False):
+    def enumerateMatch(self, word, space="_", backward=False):
         matched = []
         # while len(word) > 1 does not keep character itself, while word keed character itself
-        while len(char) > 1:
-            if self.search(char):
-                matched.append(space.join(char[:]))
-            del char[-1]
+        while len(word) > self.min_len:
+            if self.search(word):
+                matched.append(space.join(word[:]))
+            del word[-1]
         return matched

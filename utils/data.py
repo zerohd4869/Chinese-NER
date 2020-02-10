@@ -18,11 +18,12 @@ class Data:
         self.norm_char_emb = True
         self.norm_bichar_emb = True
         self.norm_gaz_emb = False
+        self.use_single = False
         self.char_alphabet = Alphabet('char')
         self.bichar_alphabet = Alphabet('bichar')
         self.label_alphabet = Alphabet('label', True)
         self.gaz_lower = False
-        self.gaz = Gazetteer(self.gaz_lower)
+        self.gaz = Gazetteer(self.gaz_lower, self.use_single)
         self.gaz_alphabet = Alphabet('gaz')
         self.HP_fix_gaz_emb = False
         self.HP_use_gaz = True
@@ -42,7 +43,7 @@ class Data:
         self.char_emb_dim = 50
         self.bichar_emb_dim = 50
         self.gaz_emb_dim = 50
-        self.posi_emb_dim  = 30
+        self.posi_emb_dim = 30
         self.gaz_dropout = 0.5
         self.pretrain_char_embedding = None
         self.pretrain_bichar_embedding = None
@@ -54,7 +55,7 @@ class Data:
         self.label_alphabet_size = 0
         # hyper parameters
         self.HP_iteration = 100
-        self.HP_batch_size = 128
+        self.HP_batch_size = 1
         # self.HP_char_hidden_dim = 50  # int. Character hidden vector dimension for character sequence layer.
         self.HP_hidden_dim = 200  # int. Char hidden vector dimension for word sequence layer.
         self.HP_dropout = 0.5  # float. Dropout probability.
@@ -65,9 +66,8 @@ class Data:
         # Word level CNN models (e.g. char LSTM + word CNN + CRF) would prefer a `lr` around 0.005 and with more iterations.
         self.HP_lr = 0.015
         self.HP_lr_decay = 0.05  # float. Learning rate decay rate, only works when optimizer=SGD.
-        self.HP_clip = 5.0  # float. Clip the gradient which is larger than the setted number.
+        self.HP_clip = 1.0  # float. Clip the gradient which is larger than the setted number.
         self.HP_momentum = 0  # float. Momentum
-
 
         self.HP_use_posi = False
         self.HP_num_layer = 4
@@ -144,8 +144,7 @@ class Data:
             # print('[' + sys._getframe().f_code.co_name + '] file ' + str(input_file) + "can not be found or is not a file address")
             return
         with codecs.open(input_file, 'r', 'utf-8') as fr:
-            in_lines = fr.readlines()  # list
-
+            in_lines = fr.readlines()
             seqlen = 0
             for idx in range(len(in_lines)):
                 line = in_lines[idx]  # '陈 B-PER\n'
@@ -165,8 +164,6 @@ class Data:
                     else:
                         bichar = char + NULLKEY
                     self.bichar_alphabet.add(bichar)
-                    # for char in char:
-                    #     self.character_alphabet.add(char)
                     seqlen += 1
                 else:
                     self.posi_alphabet_size = max(seqlen, self.posi_alphabet_size)
@@ -206,21 +203,21 @@ class Data:
             return
         with codecs.open(input_file, 'r', 'utf-8') as fr:
             in_lines = fr.readlines()
-            char_list = []
+            word_list = []
             for line in in_lines:
                 if len(line) > 3:
-                    char = line.split()[0]
+                    word = line.split()[0]
                     if self.number_normalized:
-                        char = normalize_char(char)
-                    char_list.append(char)
+                        word = normalize_char(word)
+                    word_list.append(word)
                 else:
-                    c_length = len(char_list)
-                    for idx in range(c_length):
-                        matched_entity = self.gaz.enumerateMatchList(char_list[idx:])
+                    w_length = len(word_list)
+                    for idx in range(w_length):
+                        matched_entity = self.gaz.enumerateMatchList(word_list[idx:])
                         for entity in matched_entity:
                             # print entity, self.gaz.searchId(entity),self.gaz.searchType(entity)
                             self.gaz_alphabet.add(entity)
-                    char_list = []
+                    word_list = []
             print("gaz alphabet size:", self.gaz_alphabet.size())
 
     # Alphabet
@@ -231,7 +228,7 @@ class Data:
         self.gaz_alphabet.close()
 
     def build_char_pretrain_emb(self, emb_path):
-        print("build word pretrain emb...")
+        print("build char pretrain emb...")
         self.pretrain_char_embedding, self.char_emb_dim = build_pretrain_embedding(emb_path, self.char_alphabet, self.char_emb_dim, self.norm_char_emb)
 
     def build_bichar_pretrain_emb(self, emb_path):
@@ -254,9 +251,6 @@ class Data:
         elif name == "test":
             self.test_texts, self.test_Ids = read_seg_instance(input_file, self.char_alphabet, self.bichar_alphabet,
                                                                self.label_alphabet, self.number_normalized, self.MAX_SENTENCE_LENGTH)
-        elif name == "raw":
-            self.raw_texts, self.raw_Ids = read_seg_instance(input_file, self.char_alphabet, self.bichar_alphabet,
-                                                             self.label_alphabet, self.number_normalized, self.MAX_SENTENCE_LENGTH)
         else:
             print("Error: you can only generate train/dev/test instance! Illegal input:%s" % name)
 
@@ -271,9 +265,6 @@ class Data:
         elif name == "test":
             self.test_texts, self.test_Ids = read_instance_with_gaz(input_file, self.gaz, self.char_alphabet, self.bichar_alphabet,
                                                                     self.gaz_alphabet, self.label_alphabet, self.number_normalized, self.MAX_SENTENCE_LENGTH)
-        elif name == "raw":
-            self.raw_texts, self.raw_Ids = read_instance_with_gaz(input_file, self.gaz, self.char_alphabet, self.bichar_alphabet,
-                                                                  self.gaz_alphabet, self.label_alphabet, self.number_normalized, self.MAX_SENTENCE_LENGTH)
         else:
             print("Error: you can only generate train/dev/test instance! Illegal input:%s" % name)
 
@@ -281,31 +272,39 @@ class Data:
         self.fix_alphabet()
         if name == "train":
             self.train_texts, self.train_Ids = read_instance_with_gaz_2(self.HP_num_layer, input_file, self.gaz, self.char_alphabet, self.bichar_alphabet,
-                                                                       self.gaz_alphabet, self.label_alphabet, self.number_normalized,
-                                                                      self.MAX_SENTENCE_LENGTH)
+                                                                        self.gaz_alphabet, self.label_alphabet, self.number_normalized,
+                                                                        self.MAX_SENTENCE_LENGTH)
         elif name == "dev":
             self.dev_texts, self.dev_Ids = read_instance_with_gaz_2(self.HP_num_layer, input_file, self.gaz, self.char_alphabet, self.bichar_alphabet,
-                                                                  self.gaz_alphabet, self.label_alphabet, self.number_normalized,
-                                                                  self.MAX_SENTENCE_LENGTH)
+                                                                        self.gaz_alphabet, self.label_alphabet, self.number_normalized,
+                                                                        self.MAX_SENTENCE_LENGTH)
         elif name == "test":
             self.test_texts, self.test_Ids = read_instance_with_gaz_2(self.HP_num_layer, input_file, self.gaz, self.char_alphabet, self.bichar_alphabet,
-                                                                     self.gaz_alphabet, self.label_alphabet, self.number_normalized,
-                                                                    self.MAX_SENTENCE_LENGTH)
-        elif name == "raw":
-            self.raw_texts, self.raw_Ids = read_instance_with_gaz_2(self.HP_num_layer, input_file, self.gaz, self.char_alphabet, self.bichar_alphabet,
-                                                                   self.gaz_alphabet, self.label_alphabet, self.number_normalized,
-                                                                  self.MAX_SENTENCE_LENGTH)
+                                                                        self.gaz_alphabet, self.label_alphabet, self.number_normalized,
+                                                                        self.MAX_SENTENCE_LENGTH)
         else:
             print("Error: you can only generate train/dev/test instance! Illegal input:%s" % (name))
-
-
+    def generate_instance_with_gaz_3(self, input_file, name):
+        self.fix_alphabet()
+        if name == "train":
+            self.train_texts, self.train_Ids = read_instance_with_gaz_3(input_file, self.gaz, self.char_alphabet, self.bichar_alphabet,
+                                                                        self.gaz_alphabet,  self.label_alphabet, self.number_normalized,
+                                                                        self.MAX_SENTENCE_LENGTH, self.use_single)
+        elif name == "dev":
+            self.dev_texts, self.dev_Ids = read_instance_with_gaz_3(input_file, self.gaz, self.char_alphabet, self.bichar_alphabet,
+                                                                        self.gaz_alphabet, self.label_alphabet, self.number_normalized,
+                                                                        self.MAX_SENTENCE_LENGTH, self.use_single)
+        elif name == "test":
+            self.test_texts, self.test_Ids = read_instance_with_gaz_3(input_file, self.gaz, self.char_alphabet, self.bichar_alphabet,
+                                                                        self.gaz_alphabet, self.label_alphabet, self.number_normalized,
+                                                                        self.MAX_SENTENCE_LENGTH, self.use_single)
+        else:
+            print("Error: you can only generate train/dev/test instance! Illegal input:%s" % (name))
     def write_decoded_results(self, output_file, predict_results, name):
         fout = open(output_file, 'w')
         sent_num = len(predict_results)
         content_list = []
-        if name == 'raw':
-            content_list = self.raw_texts
-        elif name == 'test':
+        if name == 'test':
             content_list = self.test_texts
         elif name == 'dev':
             content_list = self.dev_texts

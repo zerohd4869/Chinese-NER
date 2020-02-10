@@ -128,17 +128,15 @@ def read_seg_instance(input_file, char_alphabet, bichar_alphabet, character_alph
 
 
 def read_instance_with_gaz_2(num_layer, input_file, gaz, word_alphabet, biword_alphabet, gaz_alphabet, label_alphabet, number_normalized,
-                           max_sent_length, char_padding_size=-1, char_padding_symbol='</pad>'):
+                             max_sent_length):
     in_lines = open(input_file, 'r', encoding="utf-8").readlines()
     instence_texts = []
     instence_Ids = []
     words = []
     biwords = []
-    # chars = []
     labels = []
     word_Ids = []
     biword_Ids = []
-    # char_Ids = []
     label_Ids = []
     for idx in range(len(in_lines)):
         line = in_lines[idx]
@@ -158,22 +156,6 @@ def read_instance_with_gaz_2(num_layer, input_file, gaz, word_alphabet, biword_a
             word_Ids.append(word_alphabet.get_index(word))
             biword_Ids.append(biword_alphabet.get_index(biword))
             label_Ids.append(label_alphabet.get_index(label))
-            char_list = []
-            char_Id = []
-            for char in word:
-                char_list.append(char)
-            if char_padding_size > 0:
-                char_number = len(char_list)
-                if char_number < char_padding_size:
-                    char_list = char_list + [char_padding_symbol] * (char_padding_size - char_number)
-                assert (len(char_list) == char_padding_size)
-            else:
-                ### not padding
-                pass
-            # for char in char_list:
-            #     char_Id.append(char_alphabet.get_index(char))
-            # chars.append(char_list)
-            # char_Ids.append(char_Id)
 
         else:
             if ((max_sent_length < 0) or (len(words) < max_sent_length)) and (len(words) > 0):
@@ -209,21 +191,120 @@ def read_instance_with_gaz_2(num_layer, input_file, gaz, word_alphabet, biword_a
                     else:
                         gaz_Ids.append([])
 
-                instence_texts.append([words, biwords,  gazs, labels])
+                instence_texts.append([words, biwords, gazs, labels])
                 instence_Ids.append([word_Ids, biword_Ids, gaz_Ids, label_Ids, layergazs, layergazmasks])
-                # instence_texts.append([words, biwords, gazs, labels])
-                # instence_Ids.append([word_Ids, biword_Ids, gaz_Ids, label_Ids])
             words = []
             biwords = []
-            chars = []
             labels = []
             word_Ids = []
             biword_Ids = []
-            char_Ids = []
             label_Ids = []
-            gazs = []
-            gaz_Ids = []
     return instence_texts, instence_Ids
+
+
+def read_instance_with_gaz_3(input_file, gaz, word_alphabet, biword_alphabet, gaz_alphabet, label_alphabet, number_normalized, max_sent_length,
+                             use_single):
+    """
+    read instance with, word, biword, gaz, lable, no char
+    Args:
+        input_file: the input file path
+        gaz: the gaz obj
+        word_alphabet: word
+        biword_alphabet: biword
+        gaz_alphabet: gaz
+        label_alphabet: label
+        number_normalized: true or false
+        max_sent_length: the max length
+    """
+    in_lines = open(input_file, 'r', encoding="utf-8").readlines()
+    instence_texts = []
+    instence_Ids = []
+    words = []
+    biwords = []
+    labels = []
+    word_Ids = []
+    biword_Ids = []
+    label_Ids = []
+    for idx in range(len(in_lines)):
+        line = in_lines[idx]
+        if len(line) > 2:
+            pairs = line.strip().split()
+            word = pairs[0]
+            if number_normalized:
+                word = normalize_char(word)
+            label = pairs[-1]
+            if idx < len(in_lines) - 1 and len(in_lines[idx + 1]) > 2:
+                biword = word + in_lines[idx + 1].strip().split()[0]
+            else:
+                biword = word + NULLKEY
+            biwords.append(biword)
+            words.append(word)
+            labels.append(label)
+            word_Ids.append(word_alphabet.get_index(word))
+            biword_Ids.append(biword_alphabet.get_index(biword))
+            label_Ids.append(label_alphabet.get_index(label))
+        else:
+            if ((max_sent_length < 0) or (len(words) < max_sent_length)) and (len(words) > 0):
+                gazs = []
+                gaz_Ids = []
+                gazs_length = []
+                w_length = len(words)
+
+                reverse_gazs = [[] for i in range(w_length)]
+                reverse_gaz_Ids = [[] for i in range(w_length)]
+                flag = [0 for f in range(w_length)]
+                # assign sub-sequence to every chinese letter
+                for i in range(w_length):
+                    matched_list = gaz.enumerateMatchList(words[i:])
+
+                    if use_single and len(matched_list) > 0:
+                        f_len = len(matched_list[0])
+
+                        if (flag[i] == 1 or len(matched_list) > 1) and len(matched_list[-1]) == 1:
+                            matched_list = matched_list[:-1]
+
+                        for f_pos in range(i, i + f_len):
+                            flag[f_pos] = 1
+
+                    matched_length = [len(a) for a in matched_list]
+
+                    gazs.append(matched_list)
+                    matched_Id = [gaz_alphabet.get_index(entity) for entity in matched_list]
+                    if matched_Id:
+                        # gaz_Ids.append([matched_Id, matched_length])
+                        gaz_Ids.append(matched_Id)
+                        gazs_length.append(matched_length)
+                    else:
+                        gaz_Ids.append([])
+                        gazs_length.append([])
+
+                for i in range(w_length - 1, -1, -1):
+                    now_pos_gaz = gazs[i]
+                    now_pos_gaz_Id = gaz_Ids[i]
+                    now_pos_gaz_len = gazs_length[i]
+
+                    ## Traversing it
+                    l = len(now_pos_gaz)
+                    assert len(now_pos_gaz) == len(now_pos_gaz_Id)
+                    for j in range(l):
+                        width = now_pos_gaz_len[j]
+                        end_char_pos = i + width - 1
+
+                        reverse_gazs[end_char_pos].append(now_pos_gaz[j])
+                        reverse_gaz_Ids[end_char_pos].append(now_pos_gaz_Id[j])
+
+                instence_texts.append([words, biwords, gazs, reverse_gazs, labels])
+                instence_Ids.append([word_Ids, biword_Ids, gaz_Ids, reverse_gaz_Ids, label_Ids])
+            words = []
+            biwords = []
+            labels = []
+            word_Ids = []
+            biword_Ids = []
+            label_Ids = []
+
+    return instence_texts, instence_Ids
+
+
 def read_instance_with_gaz(input_file, gaz, char_alphabet, bichar_alphabet, gaz_alphabet, label_alphabet, number_normalized, max_sent_length,
                            char_padding_size=-1, char_padding_symbol='</pad>'):
     instence_texts = []
@@ -271,10 +352,6 @@ def read_instance_with_gaz(input_file, gaz, char_alphabet, bichar_alphabet, gaz_
                 else:
                     # not padding
                     pass
-                # for char in char_list:
-                #     char_Id.append(character_alphabet.get_index(char))
-                # char_Ids.append(char_Id)
-
             else:
                 if ((max_sent_length < 0) or (len(words) < max_sent_length)) and (len(words) > 0):
                     gazs = []
@@ -307,8 +384,6 @@ def read_instance_with_gaz(input_file, gaz, char_alphabet, bichar_alphabet, gaz_
                 word_Ids = []
                 biword_Ids = []
                 label_Ids = []
-                gazs = []
-                gaz_Ids = []
         return instence_texts, instence_Ids
 
 
@@ -372,16 +447,20 @@ def read_instance_with_gaz_in_sentence(input_file, gaz, char_alphabet, bichar_al
     return instence_texts, instence_Ids
 
 
-def build_pretrain_embedding(embedding_path, char_alphabet, embedd_dim=100, norm=True):
+def build_pretrain_embedding(embedding_path, word_alphabet, embedd_dim=100, norm=True):
     embedd_dict = dict()
     if embedding_path != None:
         embedd_dict, embedd_dim = load_pretrain_emb(embedding_path)
     scale = np.sqrt(3.0 / embedd_dim)
-    pretrain_emb = np.empty([char_alphabet.size(), embedd_dim])
+    pretrain_emb = np.empty([word_alphabet.size(), embedd_dim])
     perfect_match = 0
     case_match = 0
     not_match = 0
-    for word, index in char_alphabet.iteritems():
+
+    ## we should also init the index 0
+    pretrain_emb[0, :] = np.random.uniform(-scale, scale, [1, embedd_dim])
+
+    for word, index in word_alphabet.iteritems():
         if word in embedd_dict:
             if norm:
                 pretrain_emb[index, :] = norm2one(embedd_dict[word])
@@ -399,7 +478,7 @@ def build_pretrain_embedding(embedding_path, char_alphabet, embedd_dim=100, norm
             not_match += 1
     pretrained_size = len(embedd_dict)
     print("Embedding:\n     pretrain word:%s, prefect match:%s, case_match:%s, oov:%s, oov%%:%s" % (
-        pretrained_size, perfect_match, case_match, not_match, (not_match + 0.) / char_alphabet.size()))
+        pretrained_size, perfect_match, case_match, not_match, (not_match + 0.) / word_alphabet.size()))
     return pretrain_emb, embedd_dim
 
 
@@ -411,7 +490,7 @@ def norm2one(vec):
 def load_pretrain_emb(embedding_path):
     embedd_dim = -1
     embedd_dict = dict()
-    with open(embedding_path, 'r') as file:
+    with open(embedding_path, 'r', encoding="utf-8") as file:
         for line in file:
             line = line.strip()
             if len(line) == 0:

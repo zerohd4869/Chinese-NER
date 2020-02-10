@@ -1,10 +1,10 @@
+import math
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn import Linear, init
-from torch.autograd import Variable
-import numpy as np
-import math
+
 
 class ScaledDotProductAttention(nn.Module):
     ''' Scaled Dot-Product Attention '''

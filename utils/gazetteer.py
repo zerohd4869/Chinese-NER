@@ -2,17 +2,17 @@ from utils.trie import Trie
 
 
 class Gazetteer:
-    def __init__(self, lower):
-        self.trie = Trie()
+    def __init__(self, lower, use_single):
+        self.trie = Trie(use_single)
         self.ent2type = {}  ## word list to type
         self.ent2id = {"<UNK>": 0}  ## word list to id
         self.lower = lower
         self.space = ""
 
-    def enumerateMatchList(self, char_list):
+    def enumerateMatchList(self, word_list):
         if self.lower:
-            char_list = [word.lower() for word in char_list]
-        match_list = self.trie.enumerateMatch(char_list, self.space)
+            word_list = [word.lower() for word in word_list]
+        match_list = self.trie.enumerateMatch(word_list, self.space)
         return match_list
 
     def insert(self, word_list, source):
