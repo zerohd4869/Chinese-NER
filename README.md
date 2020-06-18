@@ -1,7 +1,9 @@
 # Chinese NER Using Neural Network
 
 ## 任务简介
-命名实体识别 (Named Entity Recognition, NER) 涉及实体边界的确定和命名实体识别类别的识别，是自然语言处理 (NLP) 领域的一项基础性工作。本项目针对 Chinese NER 任务，已复现 BiLSTM-CRF、Lattice LSTM、LR-CNN、WC-LSTM 等模型。另外 图模型 LGN 源码实现见 [LGN code](https://github.com/RowitZou/LGN)，序列模型 SLK-NER 代码实现见 [SLK-NER code](https://github.com/zerohd4869/SLK-NER)。
+命名实体识别 (Named Entity Recognition, NER) 涉及实体边界的确定和命名实体识别类别的识别，是自然语言处理 (NLP) 领域的一项基础性工作。本项目针对 Chinese NER 任务，已复现 BiLSTM-CRF、Lattice LSTM、LR-CNN、WC-LSTM 等模型。
+
+另外，基于 Graph 的 SOTA 模型 **LGN** 源码实现见 [RowitZou/LGN](https://github.com/RowitZou/LGN)，基于序列的 SOTA 模型 **SLK-NER** 源码实现见 [zerohd4869/SLK-NER](https://github.com/zerohd4869/SLK-NER)。
 
 ## 项目运行
 
@@ -64,7 +66,7 @@ python main.py --conf_path ./wclstm_ner.conf # conf_path 配置文件地址
 
 ### 模型评估与预测
 
-在模型的对应配置文件 ./*.conf 中修改参数 status 为 test （性能评估及预测）。运行实例：
+在配置文件 ./*.conf 中设置参数 status 为 test，运行实例：
 
 ``` bash
 python main.py --conf_path ./wclstm_ner.conf
@@ -84,7 +86,7 @@ CAN [Zhu et al., 2019]                     | 95.1    | 94.8    | 94.9
 BERT [Devlin et al., 2019]                         | 94.2    | 95.8    | 95.0
 Lattice LSTM [Yang et al., 2018]            | 94.8    | 94.1    | 94.5
 LR-CNN [Gui et al., 2019]                   | **95.4**| 94.8    | 95.1 
-**WC-LSTM** [Liu et al., 2019]                  | 95.3    | 95.2    | 95.2
+WC-LSTM [Liu et al., 2019]                  | 95.3    | 95.2    | 95.2
 **LGN** [Gui et al., 2019]                          | 95.3    | 95.5    | 95.4
 **SLK-NER** [Hu et al., 2020]                  | 95.2    | **96.4** | **95.8**
 
@@ -116,7 +118,7 @@ Strubell, E., Verga, P. , Belanger,D. , & Mccallum, A. . (2017). Fast and accura
 
 [9] Tao Gui, Ruotian Ma, Qi Zhang, Lujun Zhao, Yu-Gang Jiang, & Xuanjing Huang. 2019. CNN-Based Chinese NER with Lexicon Rethinking, In Proceedings of the 28th International Joint Conference on Artificial Intelligence (IJCAI 2019), August 10-16.
 
-**[10] Liu, Wei, et al. An Encoding Strategy Based Word-Character LSTM for Chinese NER. Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers). 2019.**
+[10] Liu, Wei, et al. An Encoding Strategy Based Word-Character LSTM for Chinese NER. Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers). 2019.
 
 **[11] Tao Gui, Yicheng Zou, Qi Zhang, Minlong Peng, Jinlan Fu, Zhongyu Wei, and Xuan-Jing Huang. A lexicon-based graph neural network for chinese ner. In EMNLP- IJCNLP, pages 1039–1049, 2019.**
 
