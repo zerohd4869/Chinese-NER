@@ -1,7 +1,7 @@
 # Chinese NER Using Neural Network
 
 ## 任务简介
-命名实体识别 (Named Entity Recognition, NER) 涉及实体边界的确定和命名实体识别类别的识别，是自然语言处理 (NLP) 领域的一项基础性工作。本项目针对 Chinese NER 任务，已复现 BiLSTM-CRF、Lattice LSTM、LR-CNN、WC-LSTM 等模型。另外 图模型 LGN 代码见 [link](https://github.com/RowitZou/LGN)，序列模型 SLK-NER 代码见 [link](https://github.com/zerohd4869/SLK-NER)。
+命名实体识别 (Named Entity Recognition, NER) 涉及实体边界的确定和命名实体识别类别的识别，是自然语言处理 (NLP) 领域的一项基础性工作。本项目针对 Chinese NER 任务，已复现 BiLSTM-CRF、Lattice LSTM、LR-CNN、WC-LSTM 等模型。另外 图模型 LGN 源码实现见 [LGN code](https://github.com/RowitZou/LGN)，序列模型 SLK-NER 代码实现见 [SLK-NER code](https://github.com/zerohd4869/SLK-NER)。
 
 ## 项目运行
 
@@ -97,33 +97,27 @@ SLK-NER [Hu et al., 2020]                  | 95.2    | **96.4** | **95.8**
 
 **参考文献**
 
-[1] Chiu, Jason P. C. , and E. Nichols . Named Entity Recognition with Bidirectional LSTM-CNNs. Computer Science (2015).
+[1] Jie Yang, Yue Zhang, Linwei Li, and Xingxuan Li. 2018. Yedda: A lightweight collaborative text span annotation tool. In ACL. Demonstration.
 
-[2] Jie Yang, Yue Zhang, Linwei Li, and Xingxuan Li. 2018. Yedda: A lightweight collaborative text span annotation tool. In ACL. Demonstration.
+[2] Jie Yang, Zhiyang Teng, Meishan Zhang, and Yue Zhang. 2016. Combining discrete and neural features for sequence labeling. In CICLing.
 
-[3] Jie Yang, Zhiyang Teng, Meishan Zhang, and Yue Zhang. 2016. Combining discrete and neural fea- tures for sequence labeling. In CICLing.
-
-[4] Kim, Yoon. Convolutional Neural Networks for Sentence Classification. Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP). 2014.
-
-[5] Lample, Guillaume, et al. Neural Architectures for Named Entity Recognition. Proceedings of NAACL-HLT. 2016.
-
-[6] Li, Xin, et al. Learning with rethinking: Recurrently improving convolutional neural networks through feedback. Pattern Recognition 79 (2018): 183-194.
-
-[7] Ma, Xuezhe, and Eduard Hovy. End-to-end Sequence Labeling via Bi-directional LSTM-CNNs-CRF.
+[3] Ma, Xuezhe, and Eduard Hovy. End-to-end Sequence Labeling via Bi-directional LSTM-CNNs-CRF.
 Strubell, E., Verga, P. , Belanger,D. , & Mccallum, A. . (2017). Fast and accurate entity recognition with iterated dilated convolutions.
 
-[8] Tao Gui, Ruotian Ma, Qi Zhang, Lujun Zhao, Yu-Gang Jiang, & Xuanjing Huang. 2019. CNN-Based Chinese NER with Lexicon Rethinking, In Proceedings of the 28th International Joint Conference on Artificial Intelligence (IJCAI 2019), August 10-16.
+[4] Lample, Guillaume, et al. Neural Architectures for Named Entity Recognition. Proceedings of NAACL-HLT. 2016.
 
-[9] Yang, Jie, Yue Zhang, and Fei Dong. Neural Word Segmentation with Rich Pretraining. Proceedings of the 55th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers). 2017.
+[5] Yang, Jie, Yue Zhang, and Fei Dong. Neural Word Segmentation with Rich Pretraining. Proceedings of the 55th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers). 2017.
 
-[10] Zhang, Yue, and Jie Yang. Chinese NER Using Lattice LSTM. Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers). 2018.
+[6] Yuying Zhu and Guoxin Wang. Can-ner: Convolutional attention network for chinese named entity recognition. In NAACL, pages 3384–3393, 2019.
 
-[11] Liu, Wei, et al. An Encoding Strategy Based Word-Character LSTM for Chinese NER. Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers). 2019.
+[7] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: Pre-training of deep bidi-rectional transformers for language understanding. In NAACL, pages 4171–4186, Minneapolis, June 2019.
 
-[12] Yuying Zhu and Guoxin Wang. Can-ner: Convolutional attention network for chinese named entity recognition. In NAACL, pages 3384–3393, 2019.
+[8] Zhang, Yue, and Jie Yang. Chinese NER Using Lattice LSTM. Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers). 2018.
 
-[13] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: Pre-training of deep bidi- rectional transformers for language understanding. In NAACL, pages 4171–4186, Minneapolis, June 2019.
+[9] Tao Gui, Ruotian Ma, Qi Zhang, Lujun Zhao, Yu-Gang Jiang, & Xuanjing Huang. 2019. CNN-Based Chinese NER with Lexicon Rethinking, In Proceedings of the 28th International Joint Conference on Artificial Intelligence (IJCAI 2019), August 10-16.
 
-[14] Tao Gui, Yicheng Zou, Qi Zhang, Minlong Peng, Jinlan Fu, Zhongyu Wei, and Xuan-Jing Huang. A lexicon- based graph neural network for chinese ner. In EMNLP- IJCNLP, pages 1039–1049, 2019.
+[10] Liu, Wei, et al. An Encoding Strategy Based Word-Character LSTM for Chinese NER. Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers). 2019.
 
-[15] Dou Hu and Lingwei Wei. ”SLK-NER: Exploiting Second-order Lexicon Knowledge for Chinese NER.” The 32st International Conference on Software & Knowledge Engineering. 2020.
+**[11] Tao Gui, Yicheng Zou, Qi Zhang, Minlong Peng, Jinlan Fu, Zhongyu Wei, and Xuan-Jing Huang. A lexicon-based graph neural network for chinese ner. In EMNLP- IJCNLP, pages 1039–1049, 2019.
+
+**[12] Dou Hu and Lingwei Wei. ”SLK-NER: Exploiting Second-order Lexicon Knowledge for Chinese NER.” The 32st International Conference on Software & Knowledge Engineering. 2020.
