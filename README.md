@@ -1,7 +1,7 @@
 # Chinese NER Using Neural Network
 
 ## 任务简介
-命名实体识别 (Named Entity Recognition, NER) 涉及实体边界的确定和命名实体识别类别的识别，是自然语言处理 (NLP) 领域的一项基础性工作。本项目针对 Chinese NER 任务，已复现 BiLSTM-CRF、Lattice LSTM、LR-CNN、WC-LSTM 等模型。另外 LGN 代码见[link](https://github.com/RowitZou/LGN)，SLK-NER 代码见[link](https://github.com/zerohd4869/SLK-NER)。
+命名实体识别 (Named Entity Recognition, NER) 涉及实体边界的确定和命名实体识别类别的识别，是自然语言处理 (NLP) 领域的一项基础性工作。本项目针对 Chinese NER 任务，已复现 BiLSTM-CRF、Lattice LSTM、LR-CNN、WC-LSTM 等模型。另外 图模型 LGN 代码见 [link](https://github.com/RowitZou/LGN)，序列模型 SLK-NER 代码见 [link](https://github.com/zerohd4869/SLK-NER)。
 
 ## 项目运行
 
@@ -52,8 +52,11 @@ Total Entity |---               |13438| 1497| 1630
 
 ### 模型训练
 
-参数配置文件是 ./*.conf, 运行实例： <!--, 其中 wclstm_ner.conf 为默认配置文件，配置了 WC-LSTM 模型的默认参数。同样的，lrcnn_ner.conf是 LR-CNN 的模型配置文件，lattice_ner.conf 是 Lattice LSTM 的模型配置文件，charbl_ner.conf 是基于char的 BiLSTM-CRF 基线模型配置文件， charbl_ner.conf 是基于 char 和 bichar 的 BiLSTM-CRF 模型配置文件。
+参数配置文件是 ./*.conf, 运行实例： 
+
+<!--, 其中 wclstm_ner.conf 为默认配置文件，配置了 WC-LSTM 模型的默认参数。同样的，lrcnn_ner.conf是 LR-CNN 的模型配置文件，lattice_ner.conf 是 Lattice LSTM 的模型配置文件，charbl_ner.conf 是基于char的 BiLSTM-CRF 基线模型配置文件， charbl_ner.conf 是基于 char 和 bichar 的 BiLSTM-CRF 模型配置文件。
 使用 WC-LSTM 模型进行训练时，在配置文件 ./wclstm_ner.conf 中修改参数 status 为 train （训练），其它参数可进行对应修改（或使用其默认值），然后运行以下命令：-->
+
 ``` bash
 python main.py --conf_path ./wclstm_ner.conf # conf_path 配置文件地址
 
@@ -61,7 +64,7 @@ python main.py --conf_path ./wclstm_ner.conf # conf_path 配置文件地址
 
 ### 模型评估与预测
 
-在模型的对应配置文件 ./*.conf 中修改参数 status 为 test （性能评估及预测）。运行以下命令：
+在模型的对应配置文件 ./*.conf 中修改参数 status 为 test （性能评估及预测）。运行实例：
 
 ``` bash
 python main.py --conf_path ./wclstm_ner.conf
@@ -74,7 +77,7 @@ python main.py --conf_path ./wclstm_ner.conf
 在 Resume 数据集下的结果如下表：
 
 Models  | P | R |F1
-:-|:-:|:-:|:-:|-
+:-|:-:|:-:|-
 BiLSTM-CRF [Lample et al., 2016]            | 93.7    | 93.3    | 93.5
 BiLSTM-CRF + bichar [Yang et al., 2017a]    | 93.9    | 94.1    | 94.0
 CAN [Zhu et al., 2019]                     | 95.1    | 94.8    | 94.9
@@ -116,3 +119,11 @@ Strubell, E., Verga, P. , Belanger,D. , & Mccallum, A. . (2017). Fast and accura
 [10] Zhang, Yue, and Jie Yang. Chinese NER Using Lattice LSTM. Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers). 2018.
 
 [11] Liu, Wei, et al. An Encoding Strategy Based Word-Character LSTM for Chinese NER. Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers). 2019.
+
+[12] Yuying Zhu and Guoxin Wang. Can-ner: Convolutional attention network for chinese named entity recognition. In NAACL, pages 3384–3393, 2019.
+
+[13] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: Pre-training of deep bidi- rectional transformers for language understanding. In NAACL, pages 4171–4186, Minneapolis, June 2019.
+
+[14] Tao Gui, Yicheng Zou, Qi Zhang, Minlong Peng, Jinlan Fu, Zhongyu Wei, and Xuan-Jing Huang. A lexicon- based graph neural network for chinese ner. In EMNLP- IJCNLP, pages 1039–1049, 2019.
+
+[15] Dou Hu and Lingwei Wei. ”SLK-NER: Exploiting Second-order Lexicon Knowledge for Chinese NER.” The 32st International Conference on Software & Knowledge Engineering. 2020.
