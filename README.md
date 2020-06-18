@@ -68,7 +68,7 @@ python main.py --conf_path ./wclstm_ner.conf
 
 ```
 
-<!--## 性能说明
+<!--## 性能说明 -->
 
 ### 实验结果
 在 Resume 数据集下的结果如下表：
