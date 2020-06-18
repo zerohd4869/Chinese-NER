@@ -3,7 +3,7 @@
 ## 任务简介
 命名实体识别 (Named Entity Recognition, NER) 涉及实体边界的确定和命名实体识别类别的识别，是自然语言处理 (NLP) 领域的一项基础性工作。本项目针对 Chinese NER 任务，已复现 BiLSTM-CRF、Lattice LSTM、LR-CNN、WC-LSTM 等模型。
 
-另外，基于 Graph 的 SOTA 模型 **LGN** 源码实现见 [RowitZou/LGN](https://github.com/RowitZou/LGN)，基于序列的 SOTA 模型 **SLK-NER** 源码实现见 [zerohd4869/SLK-NER](https://github.com/zerohd4869/SLK-NER)。
+另外，基于 Graph 的 SOTA 模型 **LGN** 源码实现见 [github](https://github.com/RowitZou/LGN)，基于序列的 SOTA 模型 **SLK-NER** 源码实现见 [github](https://github.com/zerohd4869/SLK-NER)。
 
 ## 项目运行
 
