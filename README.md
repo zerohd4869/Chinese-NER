@@ -1,7 +1,7 @@
 # Chinese NER Using Neural Network
 
 ## 任务简介
-命名实体识别 (Named Entity Recognition, NER) 涉及实体边界的确定和命名实体识别类别的识别，是自然语言处理 (NLP) 领域的一项基础性工作。本项目针对 Chinese NER 任务，目前已复现 BiLSTM-CRF、Lattice LSTM、LR-CNN 和 WC-LSTM 等模型。
+命名实体识别 (Named Entity Recognition, NER) 涉及实体边界的确定和命名实体识别类别的识别，是自然语言处理 (NLP) 领域的一项基础性工作。本项目针对 Chinese NER 任务，已复现 BiLSTM-CRF、Lattice LSTM、LR-CNN、WC-LSTM 等模型。另外 LGN 代码见[link](https://github.com/RowitZou/LGN)，SLK-NER 代码见[link](https://github.com/zerohd4869/SLK-NER)。
 
 ## 项目运行
 
@@ -52,9 +52,8 @@ Total Entity |---               |13438| 1497| 1630
 
 ### 模型训练
 
-参数配置文件是 ./*.conf , 其中 wclstm_ner.conf 为默认配置文件，配置了 WC-LSTM 模型的默认参数。同样的，lrcnn_ner.conf是 LR-CNN 的模型配置文件，lattice_ner.conf 是 Lattice LSTM 的模型配置文件，charbl_ner.conf 是基于char的 BiLSTM-CRF 基线模型配置文件， charbl_ner.conf 是基于 char 和 bichar 的 BiLSTM-CRF 模型配置文件。
-
-使用 WC-LSTM 模型进行训练时，在配置文件 ./wclstm_ner.conf 中修改参数 status 为 train （训练），其它参数可进行对应修改（或使用其默认值），然后运行以下命令： 
+参数配置文件是 ./*.conf, 运行实例： <!--, 其中 wclstm_ner.conf 为默认配置文件，配置了 WC-LSTM 模型的默认参数。同样的，lrcnn_ner.conf是 LR-CNN 的模型配置文件，lattice_ner.conf 是 Lattice LSTM 的模型配置文件，charbl_ner.conf 是基于char的 BiLSTM-CRF 基线模型配置文件， charbl_ner.conf 是基于 char 和 bichar 的 BiLSTM-CRF 模型配置文件。
+使用 WC-LSTM 模型进行训练时，在配置文件 ./wclstm_ner.conf 中修改参数 status 为 train （训练），其它参数可进行对应修改（或使用其默认值），然后运行以下命令：-->
 ``` bash
 python main.py --conf_path ./wclstm_ner.conf # conf_path 配置文件地址
 
@@ -69,28 +68,29 @@ python main.py --conf_path ./wclstm_ner.conf
 
 ```
 
-## 性能说明
+<!--## 性能说明
 
 ### 实验结果
 在 Resume 数据集下的结果如下表：
 
-Models | ACC | P | R |F1
+Models  | P | R |F1
 :-|:-:|:-:|:-:|-
-BiLSTM-CRF [Lample et al., 2016]            | 0.9564    | 0.9335    | 0.9323    | 0.9329
-BiLSTM-CRF + bichar [Yang et al., 2017a]    | 0.9599    | 0.9393    | 0.9405    | 0.9399
-Lattice LSTM [Yang et al., 2018]            | 0.9662    | 0.9378    | 0.9429    | 0.9403
-LR-CNN [Gui et al., 2019]                   | 0.9689    | 0.9499    | 0.9417    | 0.9458 
-WC-LSTM [Liu et al., 2019]                  | **0.9692**| **0.9568**| **0.9503**| **0.9535**
+BiLSTM-CRF [Lample et al., 2016]            | 93.7    | 93.3    | 93.5
+BiLSTM-CRF + bichar [Yang et al., 2017a]    | 93.9    | 94.1    | 94.0
+CAN [Zhu et al., 2019]                     | 95.1    | 94.8    | 94.9
+BERT [Devlin et al., 2019]                         | 94.2    | 95.8    | 95.0
+Lattice LSTM [Yang et al., 2018]            | 94.8    | 94.1    | 94.5
+LR-CNN [Gui et al., 2019]                   | **95.4**| 94.8    | 95.1 
+WC-LSTM [Liu et al., 2019]                  | 95.3    | 95.2    | 95.2
+LGN [Gui et al., 2019]                          | 95.3    | 95.5    | 95.4
+SLK-NER [Hu et al., 2020]                  | 95.2    | **96.4** | **95.8**
 
+<!-- 
 ### 结果分析
-
 以上四个基于 char 的神经网络模型, 不仅都可以有效地捕捉上下文信息, 而且均可以避免词粒度编码时的分词错误带来的影响。
-
 其中，加入 bichar 的 BiLSTM-CRF 模型充分利用了字粒度信息，效果略优于加 BiLSTM-CRF 传统基线模型。对于 Lattice LSTM 中文基线模型，相较于前两者，将字符级别序列信息和该序列对应的词信息同时编码供模型自动取用，加入的词信息更加丰富了语义表达，且它的门控循环单元允许模型从一个句子中选择最相关的字符和单词，进而可以取得更好的效果。这也反映了词典在字符级的中文NER任务中起着重要作用。
-
 引入了反思机制的 LR-CNN 模型比 Lattice LSTM 等上述三个模型取得了更快更好的效果，这说明了利用反思机制解决匹配相同字符的潜在词之间的冲突的方法，可以进一步提高词典信息的有效利用。而利用 CNN 结构把句子里的所有字符以及所有字符对应所有可能的词语全部并行地进行处理，以更充分的利用 GPU 的性能，因此训练速度会比RNN快很多。
-
-最后，WC-LSTM 效果目前最好。
+最后，WC-LSTM 效果目前最好。 -->
 
 **参考文献**
 
