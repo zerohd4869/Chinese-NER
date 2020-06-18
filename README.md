@@ -51,7 +51,9 @@ Total Entity |---               |13438| 1497| 1630
 ### 加载预训练 Embeddings
 
 
-预训练 Embeddings 使用了分词器 [RichWordSegmentor](https://github.com/jiesutd/RichWordSegmentor) [Yang et al.,2017a] 的 baseline。其中，```gigaword_chn.all.a2b.uni.ite50.vec```, ```gigaword_chn.all.a2b.bi.ite50.vec``` 和 ```ctb.50d.vec``` 分别对应的是 char, bichar 和 word embeddings，这三个 ```*.vec``` 文件均可在 RichWordSegmentor 项目中获取，并将其放入目录```./data/```下。
+预训练 Embeddings 使用了分词器 [RichWordSegmentor](https://github.com/jiesutd/RichWordSegmentor) [Yang et al.,2017a] 的 baseline。
+
+<!--其中，```gigaword_chn.all.a2b.uni.ite50.vec```, ```gigaword_chn.all.a2b.bi.ite50.vec``` 和 ```ctb.50d.vec``` 分别对应的是 char, bichar 和 word embeddings，这三个 ```*.vec``` 文件均可在 RichWordSegmentor 项目中获取，并将其放入目录```./data/```下。-->
 
 
 ### 模型训练
