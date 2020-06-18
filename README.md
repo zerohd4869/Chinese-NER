@@ -84,9 +84,9 @@ CAN [Zhu et al., 2019]                     | 95.1    | 94.8    | 94.9
 BERT [Devlin et al., 2019]                         | 94.2    | 95.8    | 95.0
 Lattice LSTM [Yang et al., 2018]            | 94.8    | 94.1    | 94.5
 LR-CNN [Gui et al., 2019]                   | **95.4**| 94.8    | 95.1 
-WC-LSTM [Liu et al., 2019]                  | 95.3    | 95.2    | 95.2
-LGN [Gui et al., 2019]                          | 95.3    | 95.5    | 95.4
-SLK-NER [Hu et al., 2020]                  | 95.2    | **96.4** | **95.8**
+**WC-LSTM** [Liu et al., 2019]                  | 95.3    | 95.2    | 95.2
+**LGN** [Gui et al., 2019]                          | 95.3    | 95.5    | 95.4
+**SLK-NER** [Hu et al., 2020]                  | 95.2    | **96.4** | **95.8**
 
 <!-- 
 ### 结果分析
@@ -116,8 +116,8 @@ Strubell, E., Verga, P. , Belanger,D. , & Mccallum, A. . (2017). Fast and accura
 
 [9] Tao Gui, Ruotian Ma, Qi Zhang, Lujun Zhao, Yu-Gang Jiang, & Xuanjing Huang. 2019. CNN-Based Chinese NER with Lexicon Rethinking, In Proceedings of the 28th International Joint Conference on Artificial Intelligence (IJCAI 2019), August 10-16.
 
-[10] Liu, Wei, et al. An Encoding Strategy Based Word-Character LSTM for Chinese NER. Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers). 2019.
+**[10] Liu, Wei, et al. An Encoding Strategy Based Word-Character LSTM for Chinese NER. Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers). 2019.**
 
-**[11] Tao Gui, Yicheng Zou, Qi Zhang, Minlong Peng, Jinlan Fu, Zhongyu Wei, and Xuan-Jing Huang. A lexicon-based graph neural network for chinese ner. In EMNLP- IJCNLP, pages 1039–1049, 2019.
+**[11] Tao Gui, Yicheng Zou, Qi Zhang, Minlong Peng, Jinlan Fu, Zhongyu Wei, and Xuan-Jing Huang. A lexicon-based graph neural network for chinese ner. In EMNLP- IJCNLP, pages 1039–1049, 2019.**
 
-**[12] Dou Hu and Lingwei Wei. ”SLK-NER: Exploiting Second-order Lexicon Knowledge for Chinese NER.” The 32st International Conference on Software & Knowledge Engineering. 2020.
+**[12] Dou Hu and Lingwei Wei. ”SLK-NER: Exploiting Second-order Lexicon Knowledge for Chinese NER.” The 32st International Conference on Software & Knowledge Engineering. 2020.**
