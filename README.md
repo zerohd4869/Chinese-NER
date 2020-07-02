@@ -10,7 +10,7 @@
 ## 项目运行
 
 ### 环境要求
-Pytorch v0.4.1 </br>
+Pytorch v0.4.0 </br>
 Python v3.6.2 </br>
 numpy </br>
 tqdm </br>
