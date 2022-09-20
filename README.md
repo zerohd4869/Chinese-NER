@@ -5,7 +5,7 @@
 
 本项目针对 Chinese NER 任务，已复现 BiLSTM-CRF、Lattice LSTM、LR-CNN、WC-LSTM 等模型。
 
-另外，基于 Graph 的 SOTA 模型 **LGN** 源码实现见 [github](https://github.com/RowitZou/LGN)，基于序列的 SOTA 模型 **SLK-NER** 源码实现见 [github](https://github.com/zerohd4869/SLK-NER)。
+另外，基于 Graph 的模型 **LGN** 源码实现见 [github](https://github.com/RowitZou/LGN)，基于 Sequence 的模型 **SLK-NER** 源码实现见 [github](https://github.com/zerohd4869/SLK-NER)。
 
 ## 项目运行
 
